@@ -3,7 +3,7 @@
 //	File : ai.c
 //	CoSpace Robot
 //	Version 1.0.0
-//	Jan 1 2021
+//	OCT 1 2021
 //	Copyright (C) 2021 CoSpace Robot. All Rights Reserved
 //
 //////////////////////////////////////
@@ -61,6 +61,7 @@ int AI_TeamID = 1;   //Robot Team ID. 1:Blue Ream; 2:Red Team.
 
 DLL_EXPORT void SetGameID(int GameID)
 {
+    if(CurGame != GameID) LoadedObjects = 0;
     CurGame = GameID;
     bGameEnd = 0;
 }
@@ -150,6 +151,63 @@ DLL_EXPORT void GetCommand(int *AI_OUT)
     AI_OUT[0] = WheelLeft;
     AI_OUT[1] = WheelRight;
     AI_OUT[2] = LED_1;
+}
+void TurnTo(int curRot, int targetRot)
+{
+    int p0 = targetRot;
+    int p3 = (targetRot + 3) % 360;
+    int p15 = (targetRot + 15) % 360;
+    int n3 = (targetRot - 3 + 360) % 360;
+    int n15 = (targetRot - 15 + 360) % 360;
+    int p180 = (targetRot + 180) % 360;
+    int l = 0, r = 0;
+    Duration = 6;
+    //Within(-3,+3)deg, stop turing.
+    l = n3; r = p3;
+    if ((l < r && curRot > l && curRot < r) ||
+    (l > r && (curRot > l || curRot < r)))
+    {
+        WheelLeft = 0;
+        WheelRight = 0;
+        Duration = 0;
+        return;
+    }
+    //Within[3,15]deg,Turn Slowly
+    l = p3; r = p15;
+    if ((l < r && curRot >= l && curRot <= r) ||
+        (l > r && (curRot >= l || curRot <= r)))
+    {
+        WheelLeft = 10;
+        WheelRight = -10;
+        return;
+    }
+    //Within[15,180]deg,Turn Faast
+    l = p15; r = p180;
+    if ((l < r && curRot >= l && curRot <= r) ||
+       (l > r && (curRot >= l || curRot <= r)))
+    {
+        WheelLeft = 30;
+        WheelRight = -30;
+        return;
+    }
+    //Within[-15,-3]deg,Turn Slowly
+    l = n15; r = n3;
+    if ((l < r && curRot >= l && curRot <= r) ||
+    (l > r && (curRot >= l || curRot <= r)))
+    {
+        WheelLeft = -10;
+        WheelRight = 10;
+        return;
+    }
+    //Within[-180,-15]deg,Turn Fast
+    l = p180; r = n15;
+    if ((l < r && curRot >= l && curRot <= r) ||
+    (l > r && (curRot >= l || curRot <= r)))
+    {
+        WheelLeft = -30;
+        WheelRight = 30;
+        return;
+    }
 }
 void Game0()
 {
